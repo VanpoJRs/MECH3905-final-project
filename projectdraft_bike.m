@@ -1,6 +1,5 @@
 
 
-
 %% animated obstacles function 
 close all
 clear all
