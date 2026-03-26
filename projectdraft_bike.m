@@ -102,10 +102,11 @@ ymin=-50;  %bottom boundary on figure window pop up
 
 %% For turn around 
 %trying to flip the bike (currently not working. Works along lines 
-bike_norm=bike; 
-bike_alpha_norm=bike_alpha; 
-bike_flipped=imrotate(bike, 180); 
-alpha_flipped=imrotate(bike_alpha, 180);
+bike_northbound=bike; 
+bike_alpha_northbound=bike_alpha; 
+
+bike_southbound=imrotate(bike, 180); 
+bike_alpha_southbound=imrotate(bike_alpha, 180);
 
 %% Main loop 
 for k=1:n
@@ -118,40 +119,71 @@ for k=1:n
     x_bluecar=2450; %constant because going in straight line 
 
 
-  %bike motion 
-  x_bike=2320+20*cos(0.7*y_bike/50);
-   
-  %bluecar motion 
-  y_bluecar= y_bluecar + dy_bluecar; 
-  
- 
+      %bike motion 
+      x_bike=2320+20*cos(0.7*y_bike/50);
+       
+      %bluecar motion 
+      y_bluecar= y_bluecar + dy_bluecar; 
+      
+     
 
-%boundary check 
-if y_bike>ymax || y_bike< ymin
-    dy_bike= -dy_bike; 
+    %boundary check 
+    if y_bike>ymax || y_bike< ymin
+        dy_bike= -dy_bike;    
+    end 
+
+
+    if dy_bike>0 
+        direction= 'northbound';
+    else 
+        direction= 'southbound'; 
+    end 
+       
+
+
+    switch direction
+        case 'northbound'
+            %image(bike_northbound); 
+            hbike=image(bike_northbound, ...
+                'Xdata', [x_bike-o/2, x_bike+o/2], ...
+                'Ydata', [y_bike-l/2, y_bike+l/2], ...
+                'AlphaData', bike_alpha_northbound); 
+
     
-end 
+        case 'southbound'
+            %image(bike_southbound);
+             hbike=image(bike_southbound, ...
+                'Xdata', [x_bike-o/2, x_bike+o/2], ...
+                'Ydata', [y_bike-l/2, y_bike+l/2], ...
+                'AlphaData', bike_alpha_southbound); 
+    
+        otherwise 
+            
+    end 
+        
 
 %change direction bike figure if negative dy 
-if dy_bike>=0
-   current_img =bike_norm; 
-   current_alpha =bike_alpha; 
-else
-    current_img=bike_flipped; 
-    current_alpha= alpha_flipped; 
-end
-
-if y_bluecar>ymax || y_bluecar<ymin
-    dy_bluecar=-dy_bluecar;
-end 
+% if dy_bike>=0
+%    current_img =bike_norm; 
+%    current_alpha =bike_alpha; 
+% else
+%     current_img=bike_flipped; 
+%     current_alpha= alpha_flipped;
+% end
+% 
+% a= image(current_img); 
+% 
+% if y_bluecar>ymax || y_bluecar<ymin
+%     dy_bluecar=-dy_bluecar;
+% end 
 
 
 %update bike image 
-delete(hbike); 
-hbike=image(bike, ...
-'Xdata', [x_bike-o/2, x_bike+o/2], ...
-'Ydata', [y_bike-l/2, y_bike+l/2], ...
-'AlphaData', bike_alpha); 
+% delete(hbike); 
+% hbike=image(bike, ...
+% 'Xdata', [x_bike-o/2, x_bike+o/2], ...
+% 'Ydata', [y_bike-l/2, y_bike+l/2], ...
+% 'AlphaData', bike_alpha); 
 
 %update bluecar image 
 delete(hbluecar); 
@@ -167,7 +199,7 @@ hbluecar =image(bluecar, ...
         set(hcar(i), ...
             'Xdata', [2450-q/2, 2450+q/2], ...
             'Ydata', [y_i -p/2, ...
-                  y_i + p/2], ...
+                      y_i + p/2], ...
             'AlphaData', car_alphas{i});
     end 
 
@@ -175,9 +207,10 @@ drawnow limitrate %limerate to skip iterations of loop if laggy
 
 pause(0.016) %pause for 60FPS
 
-  
+delete(hbike);   
 end 
 %%use same but offset? for other cars. 
+
 
 
 
