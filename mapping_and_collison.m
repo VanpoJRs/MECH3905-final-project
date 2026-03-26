@@ -1,0 +1,3 @@
+%%mapping out and collision 
+
+
