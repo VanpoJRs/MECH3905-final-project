@@ -3,7 +3,7 @@
 %   mask: 1=allowed, 0=wall
 %   substeps: number of small steps for safe movement
 
-function x_next = limitMovement_RK4rollback(x_current, x_predict, mask, substeps)
+function x_next = MovLimit(x_current, x_predict, mask, substeps)
 
     % Start from current state
     x_next = x_current;
