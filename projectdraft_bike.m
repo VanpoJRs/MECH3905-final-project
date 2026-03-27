@@ -13,21 +13,12 @@ clc
 
 %-----------The following block is for boundary detecting-------------
 %-----------Isolate the whole block if errors occur-------------------
-
 [bg_img,~,~] = imread('maze.png');
 bg_img = flipud(bg_img);
 bg_img = double(bg_img);
 
 [rows, cols, ~] = size(bg_img);
-
-% Define allowed colors (EDIT THESE)
-colors = [
-    255 255 255;   % A
-    200 200 200;   % B
-    0   255   0;   % C
-    0   0   255    % D
-];
-
+colors = [R G B]; %adding black, white, green, grey color
 tol = 25;
 
 mask = zeros(rows, cols);
