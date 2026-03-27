@@ -11,6 +11,42 @@ clc
 %call the background 
 [j, ball_image, alpha] = figure_setup_bike();
 
+%-----------The following block is for boundary detecting-------------
+%-----------Isolate the whole block if errors occur-------------------
+
+[bg_img,~,~] = imread('maze.png');
+bg_img = flipud(bg_img);
+bg_img = double(bg_img);
+
+[rows, cols, ~] = size(bg_img);
+
+% Define allowed colors (EDIT THESE)
+colors = [
+    255 255 255;   % A
+    200 200 200;   % B
+    0   255   0;   % C
+    0   0   255    % D
+];
+
+tol = 25;
+
+mask = zeros(rows, cols);
+
+for k = 1:size(colors,1)
+    diff = sqrt( ...
+        (bg_img(:,:,1) - colors(k,1)).^2 + ...
+        (bg_img(:,:,2) - colors(k,2)).^2 + ...
+        (bg_img(:,:,3) - colors(k,3)).^2 );
+
+    mask = mask | (diff < tol);
+end
+
+mask = double(mask);
+%------------------------------------------------------------------------
+%------------------------------------------------------------------------
+
+
+
 n=5000;
 %% obstacles pictures 
 
