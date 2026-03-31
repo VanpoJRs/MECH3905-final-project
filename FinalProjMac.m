@@ -7,6 +7,37 @@ clc
 
 [j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
 
+% ================================================================
+[bg_img,~,~] = imread('newbkg_v1.png');   % your road image
+bg_img = flipud(bg_img);
+bg_img = double(bg_img);
+
+[rows, cols, ~] = size(bg_img);
+
+% Define allowed colors (EDIT THESE)
+colors = [
+    255 255 255;   % A
+    200 200 200;   % B
+    0   255   0;   % C
+    0   0   255    % D
+];
+
+tol = 25;
+
+mask = zeros(rows, cols);
+
+for k = 1:size(colors,1)
+    diff = sqrt( ...
+        (bg_img(:,:,1) - colors(k,1)).^2 + ...
+        (bg_img(:,:,2) - colors(k,2)).^2 + ...
+        (bg_img(:,:,3) - colors(k,3)).^2 );
+
+    mask = mask | (diff < tol);
+end
+
+mask = double(mask);
+%============================================================================
+
 global m c ux uy startscreen % declare global variables used in ODE
 
 startscreen='start';
