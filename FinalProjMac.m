@@ -112,7 +112,7 @@ for i=1:n                              % loop through each time step
         end
 
        
-x_next = MovLimit(x_current, x_predict, mask, substeps);
+
 
         % RK4 integration step
         x(:,i+1)=RK4(t(i),x(:,i),h,...
