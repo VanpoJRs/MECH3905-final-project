@@ -3,6 +3,31 @@
 %   mask: 1=allowed, 0=wall
 %   substeps: number of small steps for safe movement
 
+
+%% mapping and mask for animated objects 
+overlap1= mask1 & maskbluecar; %with bluecar 
+overlap2 = mask1 & maskbike; %with bike 
+
+overlap3= mask1 & maskoil; %with oil
+overlap4= mask1 & maskpothole; %with pothole 
+
+%change array to one column and check if any 1s 
+collision1= any(overlap1(:)); %with blueCar
+collision2= any(overlap2(:)); %with bike
+collision3= any(overlap3(:)); %ith oil 
+collision4= any(overlap4(:)); %with pothole 
+
+%setting up for switch 
+if collision1
+    collisionCode =1; %player v bluecar 
+elseif collision2 
+    collisionCode= 2; %player v bike 
+elseif collision3
+    collisionCode= 3; %player v oil 
+else collision4;
+    collisionCode= 4; %player v pothole 
+end 
+
 function x_next = MovLimit(x_current, x_predict, mask, substeps)
 
     % Start from current state
