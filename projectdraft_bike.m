@@ -1,5 +1,6 @@
 
 
+
 %% animated obstacles function 
 close all
 clear all
@@ -11,33 +12,6 @@ clc
 %call the background 
 [j, ball_image, alpha] = figure_setup_bike();
 
-%-----------The following block is for boundary detecting-------------
-%-----------Isolate the whole block if errors occur-------------------
-[bg_img,~,~] = imread('maze.png');
-bg_img = flipud(bg_img);
-bg_img = double(bg_img);
-
-[rows, cols, ~] = size(bg_img);
-colors = [R G B]; %adding black, white, green, grey color
-tol = 25;
-
-mask = zeros(rows, cols);
-
-for k = 1:size(colors,1)
-    diff = sqrt( ...
-        (bg_img(:,:,1) - colors(k,1)).^2 + ...
-        (bg_img(:,:,2) - colors(k,2)).^2 + ...
-        (bg_img(:,:,3) - colors(k,3)).^2 );
-
-    mask = mask | (diff < tol);
-end
-
-mask = double(mask);
-%------------------------------------------------------------------------
-%------------------------------------------------------------------------
-
-
-
 n=5000;
 %% obstacles pictures 
 
@@ -48,46 +22,64 @@ scale_bike=0.9;
 bike_big=flipud(bike_big); %flip
 bike_alpha_big=flipud(bike_alpha_big); %flip transperancy 
 
+
 bike= imresize(bike_big, scale_bike); %reize big bike now 
 bike_alpha= imresize(bike_alpha_big, scale_bike); %resize transperancy 
 [l,o,~]=size(bike); %l=height, o=width 
 
+maskbike= alpha_bike>0; %transforming alpha into logical true and storing it to use as a mask. 
+                        %any number over 0 is true (non transperant), everywhere else false (transperant. 
 
 %obstacle 2 call; car 
 scale_bluecar=0.9;
-scale_follower=0.7; 
+scale_follower=0.9; 
 
 [bluecar_big,~, bluecar_alpha_big] =imread('yellow_car_v2.png');
 bluecar_big=flipud(bluecar_big); 
 bluecar_alpha_big=flipud(bluecar_alpha_big);
 
+
 %scaling bluecar size 
 bluecar= imresize(bluecar_big, scale_bluecar); 
 bluecar_alpha= imresize(bluecar_alpha_big, scale_bluecar); 
 [p,q,~]= size(bluecar); 
+maskbluecar= alpha_bluecar >0; %creating boolean mask for bluecar 
 
 %follower cars 
-[car2, ~, alpha2]=imread('car4.png'); 
-[car3, ~, alpha3]=imread('car4.png');
-[car4_big, ~, alpha4_big]=imread('car4.png');
+[car2, ~, alpha2]=imread('follower_car_v3.png'); 
+[car3, ~, alpha3]=imread('follower_car_v3.png');
+[car4, ~, alpha4]=imread('follower_car_v3.png');
 car2=flipud(car2); 
 car3=flipud(car3); 
-car4_big=flipud(car4_big);
+car4=flipud(car4);
 alpha2=flipud(alpha2); 
 alpha3=flipud(alpha3);
-alpha4_big=flipud(alpha4_big);
+alpha4=flipud(alpha4);
 
-car4=imresize(car4_big, scale_follower); 
-alpha4=imresize(alpha4_big, scale_follower); 
-[p_4, q_4,~]= size(car4); 
+% car4=imresize(car4_big, scale_follower); 
+% alpha4=imresize(alpha4_big, scale_follower); 
+% [p_4, q_4,~]= size(car4); 
 
-disp(p_4); 
+
 %cell array 
 car_imgs= {car2, car3, car4};
 car_alphas= {alpha2, alpha3, alpha4}; 
 
 numCars = length(car_imgs); 
 hcar = gobjects(1, numCars); %gobjects initilizes space for graphics object array i think 
+
+for i=1:numCars
+    car_imgs{i} = imresize(car_imgs{i}, scale_follower); 
+    car_alphas{i}= imresize(car_alphas{i}, scale_follower, 'nearest'); %nearest in resize to tell matlab copy value of nearest pixel
+   
+ 
+end 
+ 
+for i=1: numCars
+    maskfollowers{i} = car_alphas{i} > 0; %create masks for follower cars. 
+end 
+
+
 
 %cars rotated 
 % car2_sb=imrotate(car2, 180); 
@@ -105,7 +97,7 @@ hcar = gobjects(1, numCars); %gobjects initilizes space for graphics object arra
 
 
 %vector for y position offset. Quantity of pixels away from lead car. 
-offsets= [-1.5*p, -3*p, -5*p]; 
+offsets= [-1.5*p_4, -3*p_4, -5*p_]; 
 
 %% inital pos and equations 
 
@@ -133,13 +125,19 @@ hbluecar =image(bluecar, ...
 
 %initial pos for follower cars 
 for i= 1:numCars
+    [p_4, q_4,~]= size(car_imgs{i});
+
     hcar(i)=image(car_imgs{i}, ...
-        'Xdata', [2450-q_4/2, 2450+q_4/2], ...
+        'Xdata', [2450-q_4/2,2450+q_4/2], ...
         'Ydata', [y_bluecar + offsets(i) -p_4/2, ...
-                  y_bluecar + offsets(i) + p_4/2], ...
+                  y_bluecar + offsets(i) +p_4/2], ...
         'AlphaData', car_alphas{i}); 
 end 
 
+disp(size(car_imgs{1}))
+disp(size(car_imgs{2}))
+disp(size(car_imgs{3}))
+disp([p_4, q_4])
 %% equations of motions
 
 %equation of motion for bike
@@ -169,7 +167,7 @@ bike_alpha_southbound=imrotate(bike_alpha, 180);
 % car_imgs_northbound= car_imgs; %cell array of rotated 
 % car_imgs_southbound= car_imgs_rotated; %cell array of rotated
 
-
+ impixelinfo
 %% Main loop 
 for k=1:n
     y_old_bike=y_bike; %sotring previous y 
@@ -180,7 +178,7 @@ for k=1:n
     x_bluecar=2450; %constant because going in straight line 
 
     %bike motion 
-    x_bike=2310+20*cos(0.7*y_bike/50);
+    x_bike=2300+20*cos(0.7*y_bike/50);
        
     %bluecar motion 
     y_bluecar= y_bluecar + dy_bluecar; 
@@ -316,6 +314,7 @@ delete(hbike);
 delete(hbluecar); 
 end 
 %%use same but offset? for other cars. 
+
 
 
 
