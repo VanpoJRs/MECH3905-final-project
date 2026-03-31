@@ -2,6 +2,9 @@ close all
 clear all                      
 clc
 
+[]= animated_obstacles(); %dont know if we need to pass arguments yet ***
+[]= mapping_and_collision(); 
+
 global m c ux uy startscreen % declare global variables used in ODE
 
 startscreen='start';
