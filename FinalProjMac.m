@@ -16,10 +16,10 @@ bg_img = double(bg_img);
 
 % Define allowed colors (EDIT THESE)
 colors = [
-    255 255 255;   % A
-    200 200 200;   % B
-    0   255   0;   % C
-    0   0   255    % D
+    172 191 105;   % green
+    177 177 177;   % grey
+    242 242 242;   %white
+    65 65 67    %black
 ];
 
 tol = 25;
