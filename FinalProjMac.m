@@ -5,6 +5,8 @@ clc
 []= animated_obstacles(); %dont know if we need to pass arguments yet ***
 []= mapping_and_collision(); 
 
+[j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
+
 global m c ux uy startscreen % declare global variables used in ODE
 
 startscreen='start';
