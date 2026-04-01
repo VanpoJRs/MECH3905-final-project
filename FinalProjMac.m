@@ -88,16 +88,6 @@ pause(2);                      % allow Arduino to reboot
 [b,a,~]=size(ball_image);              % determine dimensions of ball image
 scale=0.07;                            % scaling factor for ball image
 
-%start screen image
-[start_img,~,start_alpha] = imread('start_screen.png');
-start_img = flipud(start_img);
-start_alpha = flipud(start_alpha);
-
-H_start = image(start_img,...
-    'XData',[-100 100],...
-    'YData',[-100 100],...
-    'AlphaData',start_alpha);
-
 % draw initial ball location
 H=image(ball_image,...
 'Xdata',[0-scale*a/2,0+scale*a/2],...
