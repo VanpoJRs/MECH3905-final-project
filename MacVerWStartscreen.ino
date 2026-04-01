@@ -38,18 +38,28 @@ void loop()
     gameStarted = true;
   }
 
-  if (Serial.available() > 2)
-  {
-    data_from_MATLAB = Serial.parseInt();
 
-    int joystickValueX = analogRead(joystickPinX);
-    int joystickValueY = analogRead(joystickPinY);
+if (Serial.available() > 0)
+{
+  String msg = Serial.readStringUntil('\n');
 
-    Serial.print(String(i) + "," + String(joystickValueX) + "," + String(joystickValueY) + "," + String(buttonPressed));
-    Serial.write(13);
-    Serial.write(10);
-    Serial.flush();
+  if (msg == "START") {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Game Running");
+  }
 
-    i += 1;
+  if (msg == "WIN") {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("You reached!");
+    lcd.setCursor(0,1);
+    lcd.print("Press restart");
+  }
+
+  if (msg == "RESET") {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Press to start");
   }
 }
