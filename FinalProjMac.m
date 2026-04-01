@@ -39,6 +39,7 @@ mask = double(mask);
 global m c ux uy% declare global variables used in ODE
 global gamestate x_next x_predict x_current
 gamestate = "wait";
+global gameover 
 
 startscreen='start';
 % Define constants
@@ -97,7 +98,7 @@ H=image(ball_image,...
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
 
 % simulation loop
-for i=1:n                              % loop through each time step
+while( gameover= true)                             % loop through each time step
 
     writeline(arduino,int2str(i));     % send loop counter to Arduino
 
