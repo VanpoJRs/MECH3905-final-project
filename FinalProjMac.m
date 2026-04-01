@@ -3,7 +3,6 @@ clear all
 clc
 
 
-
 [j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
 
 % ================================================================
@@ -152,15 +151,26 @@ for i=1:n                              % loop through each time step
     end
 end
 
+
+
+function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike 
+function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car
+
+   if dy_bike>0 
+        direction= 'northbound';
+    else 
+        direction= 'southbound'; 
+    end 
+
+    collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole);
+    
+function draw_bike(x_bike y_bike, direction, bike_northbound, bike_southbound, bike_alpha_northbound, bike_alpha_southbound, o, l);
+%%function car 
+
+
 clear arduino                         % close serial port connection
 
-% plot trajectory
-figure(1)
-plot(x(1,:),x(2,:),'.','MarkerSize',3) % plot x vs y trajectory
-axis equal                              % equal axis scaling
-xlabel('x axis (m)','FontSize',14)
-ylabel('y axis (m)','FontSize',14)
-title('Trajectory of circular mass','FontSize',16)
+end 
 
 % Runge-Kutta fourth order method
 function x_new = RK4(ti,xi,h,...
