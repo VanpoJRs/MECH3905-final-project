@@ -4,21 +4,28 @@
 %   substeps: number of small steps for safe movement
 
 
+%%mapping out and collision 
 %% mapping and mask for animated objects 
-overlap1= mask1 & maskbluecar; %with bluecar 
-overlap2 = mask1 & maskbike; %with bike 
 
-overlap3= mask1 & maskoil; %with oil
-overlap4= mask1 & maskpothole; %with pothole 
+function collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole)
+% mapping and mask for obstacles using logical & so only detects if both are overlapped 
+overlap1= mask1 & maskbluecar; %player with bluecar 
+overlap2 = mask1 & maskbike; %player with bike 
 
-%change array to one column and check if any 1s 
+overlap3= mask1 & maskoil; %player with oil
+overlap4= mask1 & maskpothole; %player with pothole 
+
+%change array to one column and check if any 1s for collision detection
+collision0= nonel %no collision
 collision1= any(overlap1(:)); %with blueCar
 collision2= any(overlap2(:)); %with bike
-collision3= any(overlap3(:)); %ith oil 
-collision4= any(overlap4(:)); %with pothole 
+collision3= any(overlap3(:)); %with oil 
+collision4= any(overlap4(:)); %with pothole
 
-%setting up for switch 
-if collision1
+%setting up for Switch. Assigning collision code.
+if collision0
+    coliisionCode =0; %none 
+elseif collision1
     collisionCode =1; %player v bluecar 
 elseif collision2 
     collisionCode= 2; %player v bike 
@@ -27,6 +34,41 @@ elseif collision3
 else collision4;
     collisionCode= 4; %player v pothole 
 end 
+end 
+
+
+
+       
+
+
+
+
+
+   
+
+
+%% mapping with masks. only works for one image. 
+% hobstacle1= drawpolygon(); 
+% mask1=createMask(hobstacle1);%create a logical array so that 1s outline the pond. CreateMask works by making everything else on outside 0s and inside 1s. 
+% 
+% testmask=imagesc(mask1); %image of the mask 
+% colormap([0 0 1]); %blue color over the mask 
+% alpha(testmask, 0.3); %cloudy transparency 
+% axis image; 
+% 
+% save('obstacleMask.mat', 'mask1'); 
+% disp('mask saved')
+
+%second uncomment 
+% load ('obstaclesMask.mat'); %bring in mask1 into code 
+% testmask= imagesc(mask1); 
+% colorap([1 0 0]); 
+% alpha(testmask, 0.3); 
+% axis image; 
+% disp('Mask Loaded'); 
+%% trying another apporahc 
+
+ 
 
 function x_next = MovLimit(x_current, x_predict, mask, substeps)
 
