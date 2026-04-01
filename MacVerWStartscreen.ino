@@ -1,36 +1,55 @@
-const byte joystickPinX = A0; // analog input pin connected to joystick X-axis
-const byte joystickPinY = A1; // analog input pin connected to joystick Y-axis
+#include <LiquidCrystal.h>
+
+const int rs=3, en=4, d4=5, d5=6, d6=7, d7=8;
+LiquidCrystal lcd(rs,en,d4,d5,d6,d7);
+
+const byte joystickPinX = A0;
+const byte joystickPinY = A1;
 const int buttonPin=2;
 
-int data_from_MATLAB; // stores the step index received from MATLAB
-int i = 1; // local counter for transmitted samples
+int data_from_MATLAB;
+int i = 1;
 
-void setup() // runs once at startup
+bool gameStarted = false;
+
+void setup()
 {
-  Serial.begin(115200); // initialize serial communication at 115200 baud
-  delay(500); // allow serial connection to stabilize
+  Serial.begin(115200);
+  delay(500);
+
+  lcd.begin(16, 2);
+  pinMode(buttonPin, INPUT_PULLUP);
+
+  lcd.setCursor(0,0);
+  lcd.print("Rush hour");
+  lcd.setCursor(0,1);
+  lcd.print("Press to start");
 }
 
-void loop() // runs continuously after setup
+void loop()
 {
-  if (Serial.available() > 2) // check if incoming data from MATLAB is available
+  int buttonState = digitalRead(buttonPin);
+  int buttonPressed = (buttonState == LOW);
+
+  if (buttonPressed && !gameStarted) {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Game Start");
+    gameStarted = true;
+  }
+
+  if (Serial.available() > 2)
   {
-    data_from_MATLAB = Serial.parseInt(); // read integer step index sent from MATLAB
+    data_from_MATLAB = Serial.parseInt();
 
-    int joystickValueX = analogRead(joystickPinX); // read joystick X-axis ADC value (0–1023)
-    int joystickValueY = analogRead(joystickPinY); // read joystick Y-axis ADC value (0–1023)
+    int joystickValueX = analogRead(joystickPinX);
+    int joystickValueY = analogRead(joystickPinY);
 
-    int buttonState = digitalRead(buttonPin);
-    // Convert to 1 when pressed, 0 when not
-    int buttonPressed = (buttonState == LOW) ? 1 : 0;
+    Serial.print(String(i) + "," + String(joystickValueX) + "," + String(joystickValueY) + "," + String(buttonPressed));
+    Serial.write(13);
+    Serial.write(10);
+    Serial.flush();
 
-    // send formatted response: counter , X value , Y value and button value
-    Serial.print(String(i) + "," + String(joystickValueX) + "," + String(joystickValueY)+","+String(buttonPressed));
-
-    Serial.write(13); // send carriage return (CR)
-    Serial.write(10); // send line feed (LF)
-    Serial.flush(); // wait until transmission is complete
-
-    i += 1; // increment sample counter
+    i += 1;
   }
 }
