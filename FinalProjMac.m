@@ -156,17 +156,16 @@ end
 function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike 
 function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car
 
-   if dy_bike>0 
-        direction= 'northbound';
-    else 
-        direction= 'southbound'; 
-    end 
-
-    collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole);
+collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole);
     
-function draw_bike(x_bike y_bike, direction, bike_northbound, bike_southbound, bike_alpha_northbound, bike_alpha_southbound, o, l);
-%%function car 
+%% drawing function (image rendering for car)
+function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, q, p_4, q_4)
 
+    drawnow limitrate %limerate to skip iterations of loop if laggy
+    pause(0.016) %pause for 60FPS
+    
+    delete(hbike); %clear bike for next image 
+    delete(hbluecar); %clear bluecar image
 
 clear arduino                         % close serial port connection
 
