@@ -39,6 +39,8 @@ mask = double(mask);
 %============================================================================
 
 global m c ux uy startscreen % declare global variables used in ODE
+global gamestate
+gamestate = "wait";
 
 startscreen='start';
 % Define constants
@@ -122,13 +124,10 @@ for i=1:n                              % loop through each time step
         ux_history(i)=ux;                % store x-direction input
         uy_history(i)=uy;                % store y-direction input
 
-        %start screen 
-        if strcmp(startscreen,'start')
              if button == 1
                 startscreen= "play";
              
             end
-        drawnow
         continue   % skip physics until game starts
         end
 
