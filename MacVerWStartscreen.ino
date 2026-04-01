@@ -1,3 +1,5 @@
+//don't change anything in IDE code
+
 #include <LiquidCrystal.h>
 
 const int rs=3, en=4, d4=5, d5=6, d6=7, d7=8;
