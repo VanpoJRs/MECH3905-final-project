@@ -99,13 +99,18 @@ H=image(ball_image,...
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
 
 [start_img,~,start_alpha] = imread('C:\Users\27792\OneDrive\desktop\start_screen.png');
-start_img = flipud(start_img);
-start_alpha = flipud(start_alpha);
+start_img=flipud(start_img);
+start_alpha=flipud(start_alpha);
 
-H_start = image(start_img,...
-    'XData',[-100 100],...
-    'YData',[-100 100],...
-    'AlphaData',start_alpha);
+[end_img,~,end_alpha]=imread('end_screen.png');
+end_img=flipud(end_img);
+end_alpha=flipud(end_alpha);
+
+[win_img,~,win_alpha]=imread('win_screen.png');
+win_img=flipud(win_img);
+win_alpha=flipud(win_alpha);
+
+H_start = image(start_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',start_alpha);
 
 set(gca,'YLimMode','manual');
 %=================================================================================================
@@ -140,7 +145,7 @@ for i=1:n                              % loop through each time step
         ux_history(i)=ux;                % store x-direction input
         uy_history(i)=uy;                % store y-direction input
 
-        
+%------------------start-----------------------------------------------
         if strcmp(startscreen,'start')
              if button == 1
                 startscreen= "play";
@@ -150,7 +155,31 @@ for i=1:n                              % loop through each time step
             drawnow
         continue   % skip physics until game starts
         end
+%-------------------------------------------------------------------------
 
+%-----------collision restart--------------------------------------------
+        if strcmp(gamestate,'lose')
+            if button==1
+                gamestate='start';
+                x(:,i)=x0;
+                H_screen=image(start_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',start_alpha);
+            end
+            drawnow
+            continue
+        end
+%------------------------------------------------------------------------
+
+%----------reach finish point and restart---------------------------------
+        if strcmp(gamestate,'win')
+            if button==1
+                gamestate='start';
+                x(:,i)=x0;
+                H_screen=image(start_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',start_alpha);
+            end
+            drawnow
+            continue
+        end
+%-------------------------------------------------------------------------
        
 
 
@@ -159,7 +188,33 @@ for i=1:n                              % loop through each time step
         w1,w2,w3,w4,c2,c3,c4,...
         a21,a31,a32,a41,a42,a43);
 
+        x(:,i+1)=MovLimit(x(:,i),x_predict,mask,10);
         t(i+1)=t(i)+h;                 % update time
+
+%------------------------collision logic---------------------------
+        if isequal(x(:,i+1),x(:,i))
+            gamestate='lose';
+            H_screen=image(end_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',end_alpha);
+        end
+%------------------------------------------------------------------
+
+%--------------------finish point logic-----------------------------
+        col=round((x(1,i+1)+100)/200*cols);
+        row=round((x(2,i+1)+100)/200*rows);
+
+        if row>=1 && row<=rows && col>=1 && col<=cols
+            pixel=squeeze(bg_img(row,col,:))';
+            diff=sqrt(sum((pixel-win_color).^2));
+
+            if diff<win_tol
+                gamestate='win';
+
+                H_screen=image(win_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',win_alpha);
+            end
+        end
+%---------------------------------------------------------------------
+
+
 
         % Update animation by deleting old ball and drawing new position
         delete(H);
