@@ -4,8 +4,10 @@ clc
 
 
 [j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
-
+[mask1, maskbike, maskbluecar, maskfollowers,  maskoil, maskpothole, hcar, hbike, numCars, offsetsm, l,o, offsets, p_4, q_4, y_bike, dy_bike, y_bluecar, dy_bluecar] = setup_obstacles()
 % ================================================================
+
+%%set up for background mapping 
 [bg_img,~,~] = imread('newbkg_v1.png');   % your road image
 bg_img = flipud(bg_img);
 bg_img = double(bg_img);
@@ -35,13 +37,14 @@ end
 
 mask = double(mask);
 %============================================================================
-
-global m c ux uy% declare global variables used in ODE
+%global variables 
+global m c ux uy %declare global variables used in ODE
 global gamestate x_next x_predict x_current
 gamestate = "wait";
 global gameover 
 
 startscreen='start';
+
 % Define constants
 m = 10;             % kg, mass of the ball
 c = 10;             % Ns/m, damping coefficient (slows the ball)
@@ -108,8 +111,6 @@ while( gameover= true)                 % loop through each time step
     data=readline(arduino);            % read serial data from Arduino
     num=str2double(split(data,','));   % convert comma-separated string to numbers
 
-    disp(num)
-
 
     %It's originally larger or equal to 3, I changed it to 4 so button bool
     %signal can be detected
@@ -123,7 +124,7 @@ while( gameover= true)                 % loop through each time step
         ux_history(i)=ux;                % store x-direction input
         uy_history(i)=uy;                % store y-direction input
 
-function collisionCode2= staticobstacles(maskoil, maskpothole, code_ground); %call collision function to check if player is in oil or pothole 
+function collisionCode2= staticobstacles(maskoil, maskpothole, code_ground); %call collision function to check if player is in oil.
 swtich collisionCode2
     case 1 %oil puddle 
     input_scale = 0.4; %mofidy external force to feel less (go slower)
@@ -133,8 +134,8 @@ swtich collisionCode2
     input_scale= 1.0; 
     damping= 1.0; 
     end 
-    
 
+    %%%%?? not sure what this is ? 
              if button == 1
                 startscreen= "play";
              
@@ -154,7 +155,6 @@ swtich collisionCode2
 
         % Update animation by deleting old ball and drawing new position
         delete(H);
-
         H=image(ball_image,...
         'Xdata',[x(1,i+1)-scale*a/2,x(1,i+1)+scale*a/2],...
         'Ydata',[x(2,i+1)-scale*b/2,x(2,i+1)+scale*b/2],...
@@ -162,14 +162,11 @@ swtich collisionCode2
 
         drawnow                        % update figure immediately
     end
-end
 
+function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike position
+function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car position
 
-
-function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike 
-function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car
-
-collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole);
+collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole); %collision code for animated obstacles 
     
 switch collisionCode
     case 1 %bike
@@ -178,11 +175,8 @@ switch collisionCode
     case %car
         gameover= false; 
 
-    case 3 %hoil
-        
+      
     case 4 %hole 
-
-
     case 5 %nothing
 end 
 
@@ -196,16 +190,18 @@ function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, 
     delete(hbike); %clear bike for next image 
     delete(hbluecar); %clear bluecar image
 
+
 clear arduino                         % close serial port connection
 
-end 
+end %end while loop 
 
+
+%% RK4 function 
 % Runge-Kutta fourth order method
 function x_new = RK4(ti,xi,h,...
                      w1,w2,w3,w4,...
                      c2,c3,c4,...
                      a21,a31,a32,a41,a42,a43)
-
 
 k1 = h * f(ti,xi);
 k2 = h * f(ti + c2*h, xi + a21*k1);
@@ -217,8 +213,7 @@ x_new=xi+w1*k1+w2*k2+w3*k3+w4*k4;       % combine slopes to compute next state
 end
 
 % system dynamics function
-function dxdt=f(t,x,input_scale, damping)
-
+function dxdt=f(t,x,input_scale, damping) %input_scale and damping are conditions related to oil puddle. 
 global m c ux uy            % access global parameters
 
 dxdt=zeros(4,1);                        % initialize derivative vector
