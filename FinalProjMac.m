@@ -86,8 +86,8 @@ pause(2);                      % allow Arduino to reboot
 
 % setup animation figure
 [j,ball_image,alpha]=figure_setup(); % create figure window and load ball image
-[b,a,~]=size(ball_image);              % determine dimensions of ball image
-scale=0.07;                            % scaling factor for ball image
+[b,a,~]=size(ball_image);            % determine dimensions of ball image
+scale=0.07;                          % scaling factor for ball image
 
 % draw initial ball location
 H=image(ball_image,...
@@ -98,7 +98,7 @@ H=image(ball_image,...
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
 
 % simulation loop
-while( gameover= true)                             % loop through each time step
+while( gameover= true)                 % loop through each time step
 
     writeline(arduino,int2str(i));     % send loop counter to Arduino
 
@@ -159,6 +159,22 @@ function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax);
 
 collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole);
     
+switch collisionCode
+    case 1 %bike
+        gameover= false; 
+        
+    case %car
+        gameover= false; 
+
+    case 3 %hoil
+        
+    case 4 %hole 
+
+
+    case 5 %nothing
+end 
+
+
 %% drawing function (image rendering for car)
 function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, q, p_4, q_4)
 
@@ -203,35 +219,8 @@ dxdt(4) = (-c/m)*x(4) + (uy/m);
 
 end
 
-%%function to setup figure window 
-function [j,ball_image,alpha_channel]=figure_setup()
-% adjust figure to desired size&position, then use f.Position to get #s
-%f=figure('position',[1661 -910 560 826]);
-j=figure('position',[2 50 560 826]);
-hold on % prevent axes from flipping y-axis when plotting images
-axis('equal') % set aspect ratio so equal tick mark increments on each
-% axis are equal in size
-% to use up full figure window resize and reposition axes of plot
-% to its normalized limits (0 to 1)
-ax=gca; % get current axes handle
-ax.Position=[0 0 1 1]; % normalized position of axes [left bottom width height]
-set(gcf,'Toolbar','none','Menu','none'); % remove toolbar and menu
-set(gca,'visible','off'); % remove axis labels
-set(gcf,'color','w'); % make figure background white
-ylim([-100 +100]) % set y axis limits
-xlim([-100 +100]) %set x axis limits 
-axis('manual') % freeze all axis limits for subsequent plots so they
-% do not automatically adjust on the fly
-% read image of black ball to track
-% for fast performance, make image using as few pixels as possible
-[ball_image,~,alpha_channel]=imread('circle_black_transparent.png');
-ball_image=flipud(ball_image); % need to flip image so it is oriented correctly
-% images are stored so that they face upwards when
-% y axes are reversed (positive downwards),
-% but our y axis is normal (postive upwards)
-% so we need to flip the image so it faces upward
-alpha_channel=flipud(alpha_channel);
-end
+
+
 
 
 
