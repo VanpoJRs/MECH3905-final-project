@@ -36,7 +36,7 @@ end
 mask = double(mask);
 %============================================================================
 
-global m c ux uy% declare global variables used in ODE
+global m c ux uy startscreen% declare global variables used in ODE
 global gamestate x_next x_predict x_current
 gamestate = "wait";
 
@@ -122,10 +122,14 @@ for i=1:n                              % loop through each time step
         ux_history(i)=ux;                % store x-direction input
         uy_history(i)=uy;                % store y-direction input
 
+        
+        if strcmp(startscreen,'start')
              if button == 1
                 startscreen= "play";
+                delete(H_start);
              
             end
+            drawnow
         continue   % skip physics until game starts
         end
 
