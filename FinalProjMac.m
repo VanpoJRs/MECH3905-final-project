@@ -4,7 +4,7 @@ clc
 
 
 [j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
-
+[mask1, maskbike, maskbluecar, maskfollowers,  maskoil, maskpothole, hcar, hbike, numCars, offsetsm, l,o, offsets, p_4, q_4, y_bike, dy_bike, y_bluecar, dy_bluecar] = setup_obstacles()
 % ================================================================
 [bg_img,~,~] = imread('newbkg_v1.png');
 bg_img = flipud(bg_img);
@@ -183,7 +183,16 @@ for i=1:n                              % loop through each time step
         end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+function collisionCode2= staticobstacles(maskoil, maskpothole, code_ground); %call collision function to check if player is in oil.
+swtich collisionCode2
+    case 1 %oil puddle 
+    input_scale = 0.4; %mofidy external force to feel less (go slower)
+    damping= 0.02; %modified damping to make looser more ut of control 
 
+    otherwise 
+    input_scale= 1.0; 
+    damping= 1.0; 
+    end 
 %---------------------RK4 physics------------------------------------------
         % RK4 integration step
         x(:,i+1)=RK4(t(i),x(:,i),h,...
@@ -193,14 +202,52 @@ for i=1:n                              % loop through each time step
         x(:,i+1)=MovLimit(x(:,i),x_predict,mask,10);
         t(i+1)=t(i)+h;                 % update time
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ % Update animation by deleting old ball and drawing new position
+        delete(H);
 
+        H=image(ball_image,...
+        'Xdata',[x(1,i+1)-scale*a/2,x(1,i+1)+scale*a/2],...
+        'Ydata',[x(2,i+1)-scale*b/2,x(2,i+1)+scale*b/2],...
+        'AlphaData',alpha);
+
+        drawnow                        % update figure immediately
+
+
+%===================================update animated obstacle===========================
+
+function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike position
+function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car position
 
 %------------------------collision logic---------------------------
+collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole); %collision code for animated obstacles 
+    switch collisionCode
+        case 1 %bike
+            gameover= false; 
+        
+        case %car
+            gameover= false; 
+            
+        case 4 %hole 
+        case 5 %nothing
+end 
+
         if isequal(x(:,i+1),x(:,i))
             gamestate='lose';
             H_screen=image(end_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',end_alpha);
         end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+%%=================================draw image animated obstacles============================
+%% drawing function (image rendering for car)
+function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, q, p_4, q_4)
+    
+    delete(hbike); %clear bike for next image 
+    delete(hbluecar); %clear bluecar image
+
+    drawnow limitrate %limerate to skip iterations of loop if laggy
+    pause(0.016) %pause for 60FPS
+
+    clear arduino  %close serial port connection 
 
 
 %--------------------finish point logic-----------------------------
@@ -218,43 +265,13 @@ for i=1:n                              % loop through each time step
             end
         end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-        % Update animation by deleting old ball and drawing new position
-        delete(H);
-
-        H=image(ball_image,...
-        'Xdata',[x(1,i+1)-scale*a/2,x(1,i+1)+scale*a/2],...
-        'Ydata',[x(2,i+1)-scale*b/2,x(2,i+1)+scale*b/2],...
-        'AlphaData',alpha);
-
-        drawnow                        % update figure immediately
-    end
+      
 end
 %======================================================================================
 %==========================MAIN LOOP ENDS==============================================
 
 
-function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike 
-function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car
-
-   if dy_bike>0 
-        direction= 'northbound';
-    else 
-        direction= 'southbound'; 
-    end 
-
-    collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole);
-    
-function draw_bike(x_bike y_bike, direction, bike_northbound, bike_southbound, bike_alpha_northbound, bike_alpha_southbound, o, l);
-%%function car 
-
-
-clear arduino                         % close serial port connection
-
-end 
-
+%%RK4 function
 % Runge-Kutta fourth order method
 function x_new = RK4(ti,xi,h,...
                      w1,w2,w3,w4,...
@@ -272,7 +289,7 @@ x_new=xi+w1*k1+w2*k2+w3*k3+w4*k4;       % combine slopes to compute next state
 end
 
 % system dynamics function
-function dxdt=f(t,x)
+function dxdt=f(t,x, input_scale, damping) 
 
 global m c ux uy            % access global parameters
 
@@ -281,11 +298,13 @@ dxdt=zeros(4,1);                        % initialize derivative vector
 dxdt(1)=x(3);                           % dx/dt = velocity in x
 dxdt(2)=x(4);                           % dy/dt = velocity in y
 
-dxdt(3) = (-c/m)*x(3) + (ux/m);
-dxdt(4) = (-c/m)*x(4) + (uy/m);
+dxdt(3) = (-c*damping/m)*x(3) + (input_scale*ux/m);
+dxdt(4) = (-c*dmping/m)*x(4) + (input_scale*uy/m);
 
 end
 
+
+%%%move this inot function ?
 %%function to setup figure window 
 function [j,ball_image,alpha_channel]=figure_setup()
 % adjust figure to desired size&position, then use f.Position to get #s
