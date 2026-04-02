@@ -1,0 +1,224 @@
+
+
+function [mask1, maskbike, maskbluecar, maskoil, maskpothole, hcar, hbike, numCars, offsets] = setup_obstacles()
+
+%obstacle 1 call; biker 
+scale_bike=0.9;
+
+[bike_big, ~, bike_alpha_big]= imread('biker_image_v2.png'); 
+bike_big=flipud(bike_big); %flip
+bike_alpha_big=flipud(bike_alpha_big); %flip transperancy 
+
+
+bike= imresize(bike_big, scale_bike); %reize big bike now 
+bike_alpha= imresize(bike_alpha_big, scale_bike); %resize transperancy 
+[l,o,~]=size(bike); %l=height, o=width 
+
+maskbike= alpha_bike>0; %transforming alpha into logical true and storing it to use as a mask. 
+                        %any number over 0 is true (non transperant), everywhere else false (transperant. 
+
+%obstacle 2 call; car 
+scale_bluecar=0.9;
+scale_follower=0.9; 
+
+[bluecar_big,~, bluecar_alpha_big] =imread('yellow_car_v2.png');
+bluecar_big=flipud(bluecar_big); 
+bluecar_alpha_big=flipud(bluecar_alpha_big);
+
+
+%scaling bluecar size 
+bluecar= imresize(bluecar_big, scale_bluecar); 
+bluecar_alpha= imresize(bluecar_alpha_big, scale_bluecar); 
+[p,q,~]= size(bluecar); 
+maskbluecar= alpha_bluecar >0; %creating boolean mask for bluecar 
+
+%follower cars 
+[car2, ~, alpha2]=imread('follower_car_v3.png'); 
+[car3, ~, alpha3]=imread('follower_car_v3.png');
+[car4, ~, alpha4]=imread('follower_car_v3.png');
+car2=flipud(car2); 
+car3=flipud(car3); 
+car4=flipud(car4);
+alpha2=flipud(alpha2); 
+alpha3=flipud(alpha3);
+alpha4=flipud(alpha4);
+
+% car4=imresize(car4_big, scale_follower); 
+% alpha4=imresize(alpha4_big, scale_follower); 
+% [p_4, q_4,~]= size(car4); 
+
+
+%cell array 
+car_imgs= {car2, car3, car4};
+car_alphas= {alpha2, alpha3, alpha4}; 
+
+numCars = length(car_imgs); 
+hcar = gobjects(1, numCars); %gobjects initilizes space for graphics object array i think 
+
+for i=1:numCars
+    car_imgs{i} = imresize(car_imgs{i}, scale_follower); 
+    car_alphas{i}= imresize(car_alphas{i}, scale_follower, 'nearest'); %nearest in resize to tell matlab copy value of nearest pixel
+   
+ 
+end 
+ 
+for i=1: numCars
+    maskfollowers{i} = car_alphas{i} > 0; %create masks for follower cars. 
+end 
+
+offsets= [-1.5*p_4, -3*p_4, -5*p_4]; 
+
+%intial y equations for bike 
+y_bike= 80; %inital y
+dy_bike= 10; %biker speed 
+
+%inital equations for bluecar 
+y_bluecar= 80; 
+dy_bluecar= 7;
+x_bluecar= 2450; 
+
+
+%inital pos of bluecar 
+hbluecar =image(bluecar, ...
+    'Xdata', [2450-q/2,2450+q/2], ...
+    'Ydata', [-110-p/2, -110+p/2], ...
+    'AlphaData', bluecar_alpha); 
+
+%initial pos for follower cars 
+for i= 1:numCars
+    [p_4, q_4,~]= size(car_imgs{i});
+
+    hcar(i)=image(car_imgs{i}, ...
+        'Xdata', [2450-q_4/2,2450+q_4/2], ...
+        'Ydata', [y_bluecar + offsets(i) -p_4/2, ...
+                  y_bluecar + offsets(i) +p_4/2], ...
+        'AlphaData', car_alphas{i}); 
+end 
+
+
+%obstacle 3 call; oil puddle 
+scale_oil= 1.05; 
+[oil_big,~, oil_alphabig]= imread('oil_puddle_v2.png'); 
+oil_big=flipud(oil_big); 
+oil_alphabig=flipud(oil_alphabig); 
+oil= imresize(oil_big, scale_oil);
+oil_alpha=imresize(oil_alphabig, scale_oil); 
+[b,a,~]= size(oil); 
+hoil=image(oil); %render oil image
+
+set(hoil,...
+    'Xdata', [2000-a/2, 2000+a/2], ...
+    'Ydata', [1955-b/2, 1955+b/2], ...
+    'AlphaData', oil_alpha); 
+maskoil= oil_alpha> 0; %creating bool mask for oil 
+
+
+%obstacle 4 call; pothole
+scale_pothole= 0.6;
+[pothole_big,~, pothole_alpha_big] = imread('pot_hole.png'); 
+pothole_big=flipud(pothole_big);
+pothole_alpha_big= flipud(pothole_alpha_big); 
+
+pothole= imresize(pothole_big, scale_pothole); 
+pothole_alpha= imresize(pothole_alpha_big, scale_pothole); 
+[b1,a1,~]= size(pothole); 
+hpothole = image(pothole); %render image 
+
+set(hpothole, ...
+    'Xdata', [3600-a1/2, 3600+a1/2], ...
+    'Ydata', [400-b1/2, 400+b1/2], ...
+    'AlphaData', pothole_alpha);
+maskpothole= pothole_alpha >0 %creating bool mask for pothole 
+end 
+
+%% function for updating bike
+
+function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, x_bike, ymin, ymax)
+
+    y_bike= y_bike + dy_bike; %update bike motion 
+    if y_bike > ymax || y_bike < ymin  %check if reaching boundary. Switch motion direction if so 
+        dy_bike = -dy_bike; 
+    end 
+     x_bike= 2300 + 20*cos(0.7*y_bike/50); %motion bike for x depends on y 
+    end 
+
+
+%% function for updating bluecar
+function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax)
+
+    x_bluecar=2450; %constant because going in straight line 
+    y_bluecar= y_bluecar; %update car motion 
+    if y_bluecar>ymax %boundary condition 
+        y_bluecar=ymin; 
+    end
+    y_bluecar= y_bluecar + dy_bluecar; %motion equation for car 
+
+
+
+%% drawing function (image rendering for bike) 
+function draw_bike(hbike, x_bike y_bike, direction, bike_northbound, bike_southbound, bike_alpha_northbound, bike_alpha_southbound, o, l);
+
+   % set up for  turn vehicle turnaround
+    bike_northbound=bike; 
+    bike_alpha_northbound=bike_alpha; 
+    
+    bike_southbound=imrotate(bike, 180); 
+    bike_alpha_southbound=imrotate(bike_alpha, 180);
+
+    %check condition before rendering 
+     
+    if dy_bike>0 
+        direction= 'northbound';
+    else 
+        direction= 'southbound'; 
+    end 
+    switch direction %switch direction of image depending on boundary. Uses updated x_bike and y_bike
+            case 'northbound'
+                %image(bike_northbound); 
+                hbike=image(bike_northbound, ...
+                    'Xdata', [x_bike-o/2, x_bike+o/2], ...
+                    'Ydata', [y_bike-l/2, y_bike+l/2], ...
+                    'AlphaData', bike_alpha_northbound); 
+    
+        
+            case 'southbound'
+                %image(bike_southbound);
+                 hbike=image(bike_southbound, ...
+                    'Xdata', [x_bike-o/2, x_bike+o/2], ...
+                    'Ydata', [y_bike-l/2, y_bike+l/2], ...
+                    'AlphaData', bike_alpha_southbound); 
+            otherwise 
+                
+    end
+end
+
+
+
+%% drawing function (image rendering for car)
+    function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, q, p_4, q_4)
+
+    roadlength= ymax-ymin; 
+
+    %update bluecar image 
+    hbluecar =image(bluecar, ...
+        'Xdata', [x_bluecar-q/2, x_bluecar+q/2], ...
+        'Ydata', [y_bluecar-p/2, y_bluecar+p/2], ...
+        'AlphaData', bluecar_alpha); 
+    
+    
+    %follower car 
+        for i=1:numCars
+            y_i = y_bluecar + offsets(i); 
+            if y_i< ymin
+                y_i=y_i + roadlength; %continues motion for length left once lead car is deleted 
+            end 
+            set(hcar(i), ...
+                'Xdata', [2450-q_4/2, 2450+q_4/2], ...
+                'Ydata', [y_i -p_4/2, ...
+                          y_i + p_4/2], ...
+                'AlphaData', car_alphas{i});
+        end
+
+
+
+
