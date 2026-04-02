@@ -6,7 +6,7 @@ clc
 [j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
 
 % ================================================================
-[bg_img,~,~] = imread('newbkg_v1.png');   % your road image
+[bg_img,~,~] = imread('newbkg_v1.png');
 bg_img = flipud(bg_img);
 bg_img = double(bg_img);
 
@@ -98,11 +98,11 @@ H=image(ball_image,...
 
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
 
-[start_img,~,start_alpha] = imread('C:\Users\27792\OneDrive\desktop\start_screen.png');
+[start_img,~,start_alpha] = imread('start_screen.png');
 start_img=flipud(start_img);
 start_alpha=flipud(start_alpha);
 
-[end_img,~,end_alpha]=imread('end_screen.png');
+[end_img,~,end_alpha]=imread('collide_screen.png');
 end_img=flipud(end_img);
 end_alpha=flipud(end_alpha);
 
