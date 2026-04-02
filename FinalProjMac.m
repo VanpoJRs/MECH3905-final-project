@@ -37,7 +37,7 @@ win_tol=30;
 %=====================================================================
 global m c ux uy startscreen% declare global variables used in ODE
 global gamestate x_next x_predict x_current
-gamestate = "play";
+gamestate = 'play';
 
 startscreen='start';
 % Define constants
@@ -154,7 +154,7 @@ for i=1:n                              % loop through each time step
 %------------------start-----------------------------------------------
         if strcmp(startscreen,'start')
              if button == 1
-                startscreen= 'start';
+                startscreen= 'play';
                 delete(H_start);
              
             end
