@@ -25,7 +25,7 @@ ylim([0 2160]) % set y axis limits
 xlim([-100 3840]) %set x axis limits 
 
 %% background picture load in 
-bg=imread('newbkg_v1.png'); 
+bg=imread('newbkg_v3.png'); 
 bg=flipud(bg); %flip so right side up. Because background image, dont need alpha.
 
 %bk1= image(bg); %bk is now handle to modify later if needed (stores memory
