@@ -159,15 +159,29 @@ for i=1:n                              % loop through each time step
 
 
 %-----------collision restart--------------------------------------------
+        
         if strcmp(gamestate,'lose')
             if button==1
                 gamestate='start';
+                shrinkingscale =1; %reset scale here 
                 x(:,i)=x0;
                 H_screen=image(start_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',start_alpha);
             end
             drawnow
             continue
         end
+
+        if strcmp(gamestate, 'shrinking')
+      
+           shrinkingscale= shrinkingscale-0.02; %guess but rate of shrink for player 
+            
+           if shrinkingscale <=0
+               gamestate = 'lose'; 
+            end 
+           
+          end
+
+        
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -183,31 +197,47 @@ for i=1:n                              % loop through each time step
         end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function collisionCode2= staticobstacles(maskoil, maskpothole, code_ground); %call collision function to check if player is in oil.
+collisionCode2= staticobstacles(mask1, maskoil, maskpothole); %call collision function to check if player is in oil.
 swtich collisionCode2
     case 1 %oil puddle 
     input_scale = 0.4; %mofidy external force to feel less (go slower)
     damping= 0.02; %modified damping to make looser more ut of control 
+
+    case 2 %pothole 
+    gamestate= 'shrinking';
+    shrinkingscale =1; %restart it/ initalize it 
 
     otherwise 
     input_scale= 1.0; 
     damping= 1.0; 
     end 
 %---------------------RK4 physics------------------------------------------
-        % RK4 integration step
+     if strcmp(gamestate, 'shrinking')
+          x(:, i+1) = x(:,i); %freeze motion
+    else 
+     % RK4 integration step normal motion 
         x(:,i+1)=RK4(t(i),x(:,i),h,...
         w1,w2,w3,w4,c2,c3,c4,...
         a21,a31,a32,a41,a42,a43);
 
+        %call limiting motion function 
         x(:,i+1)=MovLimit(x(:,i),x_predict,mask,10);
+    end 
+       
         t(i+1)=t(i)+h;                 % update time
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if strcmp(gamestate, 'shrinking')
+    current_img=damaged_img; 
+else
+    current_img= ball_img; 
+end 
+    
  % Update animation by deleting old ball and drawing new position
         delete(H);
-
-        H=image(ball_image,...
-        'Xdata',[x(1,i+1)-scale*a/2,x(1,i+1)+scale*a/2],...
-        'Ydata',[x(2,i+1)-scale*b/2,x(2,i+1)+scale*b/2],...
+    scale_effective= scale * shrinkingscale;
+        H=image(current_image,...
+        'Xdata',[x(1,i+1)-scale_effective*a/2,x(1,i+1)+scale_effective*a/2],...
+        'Ydata',[x(2,i+1)-scale_effective*b/2,x(2,i+1)+scale_effective*b/2],...
         'AlphaData',alpha);
 
         drawnow                        % update figure immediately
@@ -219,15 +249,14 @@ function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %u
 function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car position
 
 %------------------------collision logic---------------------------
-collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole); %collision code for animated obstacles 
+collisionCode= mapping(mask1, maskbike, maskbluecar); %collision code for animated obstacles 
     switch collisionCode
         case 1 %bike
             gameover= false; 
         
         case %car
             gameover= false; 
-            
-        case 4 %hole 
+        
         case 5 %nothing
 end 
 
