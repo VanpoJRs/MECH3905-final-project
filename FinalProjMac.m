@@ -83,6 +83,8 @@ configureTerminator(arduino,"CR/LF"); % define line ending
 flush(arduino);                % clear communication buffer
 pause(2);                      % allow Arduino to reboot
 
+%===========setup ball image and screens==========================================================
+%=================================================================================================
 % setup animation figure
 [j,ball_image,alpha]=figure_setup(); % create figure window and load ball image
 [b,a,~]=size(ball_image);              % determine dimensions of ball image
@@ -96,6 +98,22 @@ H=image(ball_image,...
 
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
 
+[start_img,~,start_alpha] = imread('C:\Users\27792\OneDrive\desktop\start_screen.png');
+start_img = flipud(start_img);
+start_alpha = flipud(start_alpha);
+
+H_start = image(start_img,...
+    'XData',[-100 100],...
+    'YData',[-100 100],...
+    'AlphaData',start_alpha);
+
+set(gca,'YLimMode','manual');
+%=================================================================================================
+%=================================================================================================
+
+
+%=================================================================================================
+%==================================MAIN LOOP======================================================
 % simulation loop
 for i=1:n                              % loop through each time step
 
@@ -154,7 +172,8 @@ for i=1:n                              % loop through each time step
         drawnow                        % update figure immediately
     end
 end
-
+%======================================================================================
+%==========================MAIN LOOP ENDS==============================================
 
 
 function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike 
