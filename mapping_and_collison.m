@@ -18,8 +18,8 @@ function collisionCode= mapping(mask1, maskbike, maskbluecar)
     collision1= any(overlap1(:)); %with blueCar
     collision2= any(overlap2(:)); %with bike
     
-    % collision3= any(overlap3(:)); %with oil 
-    collision4= any(overlap4(:)); %with pothole
+    % collision3= any(overlap3(:)); %with oil%
+  % collision4= any(overlap4(:)); %with pothole
     
     %setting up for Switch. Assigning collision code.
     
@@ -30,8 +30,8 @@ function collisionCode= mapping(mask1, maskbike, maskbluecar)
     
     % elseif collision3
     %     collisionCode= 3;%player v oil 
-    else collision4;
-        collisionCode= 4; %player v pothole 
+   % else collision4;
+        %collisionCode= 4; %player v pothole 
     end 
 end 
 
@@ -41,14 +41,16 @@ end
 function collisionCode2= staticobstacles(maskoil, maskpothole)
 
     overlap3= mask1 & maskoil; %player with oil
-    % overlap4= mask1 & maskpothole; %player with pothole 
+    overlap4= mask1 & maskpothole; %player with pothole 
     
     collision3= any(overlap3(:)); %with oil 
-    % collision4= any(overlap4(:)); %with pothole
+    collision4= any(overlap4(:)); %with pothole
     collision0= 0; % not overlap or 
     
     if collision3 
         collisionCode2= 1; %player v oil 
+    elseif collision4 
+        collisionCode4=2; %player v hole 
     else collision0
         collisionCode2=0; %nothing 
     end 
