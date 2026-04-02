@@ -3,8 +3,9 @@ clear all
 clc
 
 
-[j, ball_image, alpha] = figure_setup_bike(); %where the background is read in 
-[mask1, maskbike, maskbluecar, maskfollowers,  maskoil, maskpothole, hcar, hbike, numCars, offsetsm, l,o, offsets, p_4, q_4, y_bike, dy_bike, y_bluecar, dy_bluecar] = setup_obstacles()
+[j, ball_image, alpha, mask1] = figure_setup_bike(); %where the background is read in 
+
+[maskbike, maskbluecar, maskfollowers, hcar, hbike, numCars, offsets, l,o, p_4, q_4, y_bike, dy_bike, y_bluecar, dy_bluecar, maskoil] = setup_obstacles();
 % ================================================================
 [bg_img,~,~] = imread('newbkg_v1.png');
 bg_img = flipud(bg_img);
@@ -35,11 +36,10 @@ end
 
 mask = double(mask);
 %============================================================================
-
 win_color=[235 226 253];   %finsih point RGB definition
 win_tol=30;
-%=============================================================================
 
+%=====================================================================
 global m c ux uy startscreen% declare global variables used in ODE
 global gamestate x_next x_predict x_current
 gamestate = "play";
@@ -79,7 +79,7 @@ c2=1/2; c3=1/2; c4=1;
 a21=1/2; a31=0; a32=1/2; a41=0; a42=0; a43=1;
 
 % Serial communication setup
-port="/dev/cu.usbmodem1101";                   % COM port connected to Arduino
+port="COM3";                   % COM port connected to Arduino
 baud=115200;                   % baud rate (must match Arduino code)
 
 arduino=serialport(port,baud); % create serial communication object
@@ -90,7 +90,7 @@ pause(2);                      % allow Arduino to reboot
 %===========setup ball image and screens==========================================================
 %=================================================================================================
 % setup animation figure
-[j,ball_image,alpha]=figure_setup(); % create figure window and load ball image
+[j,ball_image,alpha]=figure_setup_bike(); % create figure window and load ball image
 [b,a,~]=size(ball_image);              % determine dimensions of ball image
 scale=0.07;                            % scaling factor for ball image
 
@@ -102,15 +102,15 @@ H=image(ball_image,...
 
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
 
-[start_img,~,start_alpha] = imread('start_screen.png');
+[start_img,~,start_alpha] = imread('start_screen.jpg');
 start_img=flipud(start_img);
 start_alpha=flipud(start_alpha);
 
-[end_img,~,end_alpha]=imread('collide_screen.png');
+[end_img,~,end_alpha]=imread('collide.jpg');
 end_img=flipud(end_img);
 end_alpha=flipud(end_alpha);
 
-[win_img,~,win_alpha]=imread('win_screen.png');
+[win_img,~,win_alpha]=imread('win_screen.jpg');
 win_img=flipud(win_img);
 win_alpha=flipud(win_alpha);
 
@@ -190,7 +190,7 @@ for i=1:n                              % loop through each time step
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 collisionCode2= staticobstacles(mask1, maskoil, maskpothole); %call collision function to check if player is in oil.
-swtich collisionCode2
+switch  collisionCode2
     case 1 %oil puddle 
     input_scale = 0.4; %mofidy external force to feel less (go slower)
     damping= 0.02; %modified damping to make looser more ut of control 
@@ -237,19 +237,19 @@ end
 
 %===================================update animated obstacle===========================
 
-function [y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike position
-function[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car position
+[y_bike,x_bike, dy_bike] = update_bike(y_bike, dy_bike, ymin, ymax); %update bike position
+[y_bluecar, dy_bluecar]= update_cars(y_bluecar, dy_bluecar, ymin, ymax); %update car position
 
 %------------------------collision logic---------------------------
 collisionCode= mapping(mask1, maskbike, maskbluecar); %collision code for animated obstacles 
     switch collisionCode
         case 1 %bike
-            gameover= false; 
+            gamestate= 'lose'; 
         
-        case %car
-            gameover= false; 
+        case 2 %car
+            gamestate = 'lose'; 
         
-        case 5 %nothing
+        otherwise %nothing
 end 
 
         if isequal(x(:,i+1),x(:,i))
@@ -260,8 +260,11 @@ end
 
 %%=================================draw image animated obstacles============================
 %% drawing function (image rendering for car)
-function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, q, p_4, q_4)
-    
+%function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, q, p_4, q_4)
+   
+
+
+
     delete(hbike); %clear bike for next image 
     delete(hbluecar); %clear bluecar image
 
@@ -287,7 +290,8 @@ function draw_cars(hbluecar, hcar, x_bluecar, y_bluecar,numCars, ymin, ymax, p, 
         end
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
-end
+    end
+end 
 %======================================================================================
 %==========================MAIN LOOP ENDS==============================================
 
@@ -325,36 +329,35 @@ dxdt(4) = (-c*dmping/m)*x(4) + (input_scale*uy/m);
 end
 
 
-%%%move this inot function ?
-%%function to setup figure window 
-function [j,ball_image,alpha_channel]=figure_setup()
-% adjust figure to desired size&position, then use f.Position to get #s
-%f=figure('position',[1661 -910 560 826]);
-j=figure('position',[2 50 560 826]);
-hold on % prevent axes from flipping y-axis when plotting images
-axis('equal') % set aspect ratio so equal tick mark increments on each
-% axis are equal in size
-% to use up full figure window resize and reposition axes of plot
-% to its normalized limits (0 to 1)
-ax=gca; % get current axes handle
-ax.Position=[0 0 1 1]; % normalized position of axes [left bottom width height]
-set(gcf,'Toolbar','none','Menu','none'); % remove toolbar and menu
-set(gca,'visible','off'); % remove axis labels
-set(gcf,'color','w'); % make figure background white
-ylim([-100 +100]) % set y axis limits
-xlim([-100 +100]) %set x axis limits 
-axis('manual') % freeze all axis limits for subsequent plots so they
-% do not automatically adjust on the fly
-% read image of black ball to track
-% for fast performance, make image using as few pixels as possible
-[ball_image,~,alpha_channel]=imread('circle_black_transparent.png');
-ball_image=flipud(ball_image); % need to flip image so it is oriented correctly
-% images are stored so that they face upwards when
-% y axes are reversed (positive downwards),
-% but our y axis is normal (postive upwards)
-% so we need to flip the image so it faces upward
-alpha_channel=flipud(alpha_channel);
-end
+% %%%move this inot function ?
+% %%function to setup figure window 
+% function [j,ball_image,alpha_channel]=figure_setup()
+% % adjust figure to desired size&position, then use f.Position to get #s
+% %f=figure('position',[1661 -910 560 826]);
+% j=figure('position',[2 50 560 826]);
+% hold on % prevent axes from flipping y-axis when plotting images
+% axis('equal') % set aspect ratio so equal tick mark increments on each
+% % axis are equal in size
+% % to use up full figure window resize and reposition axes of plot
+% % to its normalized limits (0 to 1)
+% ax=gca; % get current axes handle
+% ax.Position=[0 0 1 1]; % normalized position of axes [left bottom width height]
+% set(gcf,'Toolbar','none','Menu','none'); % remove toolbar and menu
+% set(gca,'visible','off'); % remove axis labels
+% set(gcf,'color','w'); % make figure background white
+% ylim([-100 +100]) % set y axis limits
+% xlim([-100 +100]) %set x axis limits 
+% axis('manual') % freeze all axis limits for subsequent plots so they
+% % do not automatically adjust on the fly
+% % read image of black ball to track
+% % for fast performance, make image using as few pixels as possible
+% [ball_image,~,alpha_channel]=imread('circle_black_transparent.png');
+% ball_image=flipud(ball_image); % need to flip image so it is oriented correctly
+% % images are stored so that they face upwards when
+% % y axes are reversed (positive downwards),
+% % but our y axis is normal (postive upwards)
+% % so we need to flip the image so it faces upward
+% alpha_channel=flipud(alpha_channel);
 
 
 
