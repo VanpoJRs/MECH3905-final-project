@@ -169,19 +169,7 @@ for i=1:n                              % loop through each time step
             end
             drawnow
             continue
-        end
-
-        if strcmp(gamestate, 'shrinking')
-      
-           shrinkingscale= shrinkingscale-0.02; %guess but rate of shrink for player 
-            
-           if shrinkingscale <=0
-               gamestate = 'lose'; 
-            end 
-           
-          end
-
-        
+        end    
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
