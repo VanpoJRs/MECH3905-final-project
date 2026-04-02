@@ -38,7 +38,7 @@ mask = double(mask);
 
 global m c ux uy startscreen% declare global variables used in ODE
 global gamestate x_next x_predict x_current
-gamestate = "wait";
+gamestate = "play";
 
 startscreen='start';
 % Define constants
