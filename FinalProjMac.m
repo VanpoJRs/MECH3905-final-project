@@ -343,9 +343,9 @@ function x_next = MovLimit(x_current, x_predict, mask, substeps)
         x_trial(2)=x_trial(2) + dy;
 
         % Convert to pixel indices
-        col=round(x_trial(1));
-        row=round(x_trial(2));
-
+       col=round((x_trial(1)+100)/200*cols);
+       row=round((x_trial(2)+100)/200*rows);
+ 
         % Boundary check
         if row<1 || row>rows || col<1 || col>cols
             break
