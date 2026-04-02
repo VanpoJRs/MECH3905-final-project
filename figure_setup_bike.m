@@ -1,6 +1,6 @@
 
 %% function to setup figure window 
-function [j,ball_image,alpha_channel]=figure_setup_bike()
+function [j,ball_image,alpha_channel, damage_img]=figure_setup_bike()
 
 % adjust figure to desired size&position, then use f.Position to get #s
 j=figure('position',[0 50 3840 2160]); %%width then height form bottom left. Size in pixels 
@@ -91,4 +91,9 @@ ball_image=flipud(ball_image); % need to flip image so it is oriented correctly
 % but our y axis is normal (postive upwards)
 % so we need to flip the image so it faces upward
 alpha_channel=flipud(alpha_channel);
+
+
+[damage_img,~, alpha_damaged]= imread(); %sad face or something 
+damaged_img=flipud(damaged_img); 
+alpha_damaged=flupud(alpha_damaged); 
 end
