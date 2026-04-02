@@ -7,11 +7,6 @@ clc
 
 [maskbike, maskbluecar, maskfollowers, hcar, hbike, numCars, offsets, l,o, p_4, q_4, y_bike, dy_bike, y_bluecar, dy_bluecar, maskoil] = setup_obstacles();
 % ================================================================
-[bg_img,~,~] = imread('newbkg_v1.png');
-bg_img = flipud(bg_img);
-bg_img = double(bg_img);
-
-[rows, cols, ~] = size(bg_img);
 
 % Define allowed colors (EDIT THESE)
 colors = [
@@ -89,6 +84,12 @@ pause(2);                      % allow Arduino to reboot
 
 %===========setup ball image and screens==========================================================
 %=================================================================================================
+[bg_img,~,~] = imread('newbkg_v1.png');
+bg_img = flipud(bg_img);
+bg_img = double(bg_img);
+
+[rows, cols, ~] = size(bg_img);
+
 % setup animation figure
 [j,ball_image,alpha]=figure_setup_bike(); % create figure window and load ball image
 [b,a,~]=size(ball_image);              % determine dimensions of ball image
@@ -115,6 +116,7 @@ win_img=flipud(win_img);
 win_alpha=flipud(win_alpha);
 
 H_start = image(start_img,'XData',[-100 100],'YData',[-100 100],'AlphaData',start_alpha);
+uistack(H_start,'top');
 
 set(gca,'YLimMode','manual');
 %=================================================================================================
@@ -152,7 +154,7 @@ for i=1:n                              % loop through each time step
 %------------------start-----------------------------------------------
         if strcmp(startscreen,'start')
              if button == 1
-                startscreen= "play";
+                startscreen= 'start';
                 delete(H_start);
              
             end
