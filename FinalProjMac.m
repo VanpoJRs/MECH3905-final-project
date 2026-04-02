@@ -36,6 +36,10 @@ end
 mask = double(mask);
 %============================================================================
 
+win_color=[235 226 253];   %finsih point RGB definition
+win_tol=30;
+%=============================================================================
+
 global m c ux uy startscreen% declare global variables used in ODE
 global gamestate x_next x_predict x_current
 gamestate = "play";
