@@ -131,6 +131,7 @@ for i=1:n                              % loop through each time step
     writeline(arduino,int2str(i));     % send loop counter to Arduino
 
     while arduino.NumBytesAvailable==0 % wait until Arduino sends data
+    pause(0.01);
     end
 
     data=readline(arduino);            % read serial data from Arduino
