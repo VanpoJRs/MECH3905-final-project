@@ -4,37 +4,55 @@
 %   substeps: number of small steps for safe movement
 
 
-%%mapping out and collision 
-%% mapping and mask for animated objects 
+function collisionCode= mapping(mask1, maskbike, maskbluecar)
+    % mapping and mask for obstacles using logical & so only detects if both are overlapped 
+    overlap1= mask1 & maskbluecar; %player with bluecar 
+    overlap2 =mask1 & maskbike; %player with bike 
+    overlap4= mask1 & maskpothole; %player with pothole 
 
-function collisionCode= mapping(mask1, maskbike, maskbluecar, maskoil, maskpothole)
-% mapping and mask for obstacles using logical & so only detects if both are overlapped 
-overlap1= mask1 & maskbluecar; %player with bluecar 
-overlap2 = mask1 & maskbike; %player with bike 
+    % overlap3= mask1 & maskoil; %player with oil
 
-overlap3= mask1 & maskoil; %player with oil
-overlap4= mask1 & maskpothole; %player with pothole 
-
-%change array to one column and check if any 1s for collision detection
-collision0= nonel %no collision
-collision1= any(overlap1(:)); %with blueCar
-collision2= any(overlap2(:)); %with bike
-collision3= any(overlap3(:)); %with oil 
-collision4= any(overlap4(:)); %with pothole
-
-%setting up for Switch. Assigning collision code.
-if collision0
-    coliisionCode =0; %none 
-elseif collision1
-    collisionCode =1; %player v bluecar 
-elseif collision2 
-    collisionCode= 2; %player v bike 
-elseif collision3
-    collisionCode= 3; %player v oil 
-else collision4;
-    collisionCode= 4; %player v pothole 
+    
+    %change array to one column and check if any 1s for collision detection
+    
+    collision1= any(overlap1(:)); %with blueCar
+    collision2= any(overlap2(:)); %with bike
+    
+    % collision3= any(overlap3(:)); %with oil 
+    collision4= any(overlap4(:)); %with pothole
+    
+    %setting up for Switch. Assigning collision code.
+    
+    if collision1
+        collisionCode =1; %player v bluecar 
+    else collision2 
+        collisionCode= 2; %player v bike 
+    
+    % elseif collision3
+    %     collisionCode= 3;%player v oil 
+    else collision4;
+        collisionCode= 4; %player v pothole 
+    end 
 end 
+
+
+function collisionCode2= staticobstacles(maskoil, maskpothole)
+
+    overlap3= mask1 & maskoil; %player with oil
+    % overlap4= mask1 & maskpothole; %player with pothole 
+    
+    collision3= any(overlap3(:)); %with oil 
+    % collision4= any(overlap4(:)); %with pothole
+    collision0= 0; % not overlap or 
+    
+    if collision3 
+        collisionCode2= 1; %player v oil 
+    else collision0
+        collisionCode2=0; %nothing 
+    end 
+
 end 
+
 
 
 
