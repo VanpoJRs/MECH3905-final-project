@@ -16,26 +16,28 @@ void setup()
 
 void loop()
 {
+  // 1. Read button state CONSTANTLY, not just when serial is available
   int buttonState = digitalRead(buttonPin);
-  int buttonPressed = (buttonState == LOW);  // pressed = 1
+  int buttonPressed = (buttonState == LOW) ? 1 : 0; 
 
   if (Serial.available() > 0)
   {
-    data_from_MATLAB = Serial.parseInt();  // read loop index
+    // 2. Read the index sent by MATLAB
+    int incomingIndex = Serial.parseInt(); 
 
+    // 3. Read Joysticks
     int joystickValueX = analogRead(joystickPinX);
     int joystickValueY = analogRead(joystickPinY);
 
-    Serial.print(String(i) + "," + 
-    String(joystickValueX) + "," + 
-    String(joystickValueY) + "," + 
-    String(buttonPressed));
-
-    Serial.write(13); // CR
-    Serial.write(10); // LF
+    // 4. Send back the EXACT index MATLAB is expecting (incomingIndex)
+    Serial.print(incomingIndex); 
+    Serial.print(",");
+    Serial.print(joystickValueX);
+    Serial.print(",");
+    Serial.print(joystickValueY);
+    Serial.print(",");
+    Serial.println(buttonPressed); // println handles the CR/LF automatically
 
     Serial.flush();
-
-    i += 1;
   }
 }
