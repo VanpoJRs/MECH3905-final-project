@@ -96,7 +96,7 @@ H=image(ball_image,...
 'AlphaData',alpha);
 
 set(gca,'YLimMode','manual');          % fix y-axis limits to prevent auto scaling
-
+%========================================================================================
 % simulation loop
 while( gameover= true)                 % loop through each time step
 
@@ -122,6 +122,18 @@ while( gameover= true)                 % loop through each time step
         button=num(4);               %button signal
         ux_history(i)=ux;                % store x-direction input
         uy_history(i)=uy;                % store y-direction input
+
+function collisionCode2= staticobstacles(maskoil, maskpothole, code_ground); %call collision function to check if player is in oil or pothole 
+swtich collisionCode2
+    case 1 %oil puddle 
+    input_scale = 0.4; %mofidy external force to feel less (go slower)
+    damping= 0.02; %modified damping to make looser more ut of control 
+
+    otherwise 
+    input_scale= 1.0; 
+    damping= 1.0; 
+    end 
+    
 
              if button == 1
                 startscreen= "play";
@@ -205,7 +217,7 @@ x_new=xi+w1*k1+w2*k2+w3*k3+w4*k4;       % combine slopes to compute next state
 end
 
 % system dynamics function
-function dxdt=f(t,x)
+function dxdt=f(t,x,input_scale, damping)
 
 global m c ux uy            % access global parameters
 
@@ -214,8 +226,8 @@ dxdt=zeros(4,1);                        % initialize derivative vector
 dxdt(1)=x(3);                           % dx/dt = velocity in x
 dxdt(2)=x(4);                           % dy/dt = velocity in y
 
-dxdt(3) = (-c/m)*x(3) + (ux/m);
-dxdt(4) = (-c/m)*x(4) + (uy/m);
+dxdt(3) = (-c*damping/m)*x(3) + (input_scale*ux/m);
+dxdt(4) = (-c*damping/m)*x(4) + (input_scale*uy/m);
 
 end
 
